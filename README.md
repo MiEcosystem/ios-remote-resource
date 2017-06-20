@@ -10,7 +10,7 @@
 
 ### 插件创建
 
-1. 进入 MiHomeResoucePluginSDK 所在目录
+1. 进入该项目根目录
 
 2. 运行 createPlugin 脚本
 
@@ -112,7 +112,7 @@
 
 1. 修改本地插件包的 packageInfo.json 一般是将上一次成功上传的 version + 1，并确定 **asset_level** 等其他信息是否填写正确。
 
-2. 进入 MiHomeResoucePluginSDK 目录
+2. 进入该项目根目录
 
 3. 运行 packagePluginAndSign 脚本进行打包：
 
