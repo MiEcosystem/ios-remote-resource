@@ -43,6 +43,7 @@
  "models":"aaa.bbb.v1|your_device_model2", // 插件支持的设备 model，一个插件包可以支持多个model，用|分割。合作开发提供的代码支持哪些产品 model ，需要全部填入
  "asset_level":"1", // 与合作开发提供的原生代码中的 asset_level 对应，以1开始计数。具体更改规则见后续章节
  "version":"1", // 插件包的版本，每个上传的插件包都要不同且递增，每次上传新的插件包之前都需要修改
+ "min_api_level":"1",//保留字段，默认为1，不用修改
  "platform":"iphone" // 插件包支持的平台，目前只支持iphone，不用修改
 }
 ```

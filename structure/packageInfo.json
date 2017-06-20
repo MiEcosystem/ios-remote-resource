@@ -3,6 +3,7 @@
   "developer_id":"your_developer_id",
   "models":"your_device_model1|your_device_model2",
   "version":"1",
+  "min_api_level":"1",
   "asset_level":"1",
   "platform":"iphone"
 }
