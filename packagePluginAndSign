@@ -1,0 +1,140 @@
+#!/usr/bin/python
+import sys
+import os
+import shutil
+import random
+import string
+
+def fail_and_exit(message):
+    print "Error: "+message
+    print "package plugin failed!"
+    print "cleaning..."
+    os.system("rm -rf ./temp_plugin_dir")
+    os.system("rm -rf ./tmp.md5")
+    os.system("rm -rf ./tmp_signed")
+    os.system("rm -rf ./tempCodeSign")
+    os.system("rm -rf ./codeSign.zip")
+    os.system("rm -rf ./codeSign")
+    os.system("rm -rf ./key")
+    try:
+        os.system("rm -rf ./"+keyOut)
+    finally:
+        exit(0)
+
+def shell_dir():
+    path = sys.path[0]
+    if os.path.isdir(path):
+        return path
+    elif os.path.isfile(path):
+        return os.path.dirname(path)
+
+def generate_dynamic_key(length=16):
+    str = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM"
+    dynamicList = random.sample(str,length)
+    dynamicStr = string.join(dynamicList).replace(" ","")
+    return dynamicStr
+
+if len(sys.argv)<5:
+    fail_and_exit("packagePluginAndSign pluginName private.pem public.cer developerId noframework")
+
+shellDir = shell_dir()
+pluginName = sys.argv[1]
+pluginName = pluginName.replace("/", "")
+os.system("rm -rf "+pluginName+".signed.zip")
+
+privateKeyFile = sys.argv[2]
+publicCertFile = sys.argv[3]
+developerId = sys.argv[4]
+
+noframework = ""
+if len(sys.argv) >= 6:
+    noframework = sys.argv[5]
+
+
+answer = raw_input("Have you UPDATED your VERSION information THIS TIME in packageInfo.json under your plugin dir? [type yes to continue]")
+if (answer != "yes"):
+    fail_and_exit("Please update it first using any text editor!")
+answer = raw_input("Have you CHECK your asset level  in packageinfo.json under your plugin dir? [type yes to continue]")
+if (answer != "yes"):
+        fail_and_exit("Please update it first using any text editor!")
+os.system("rm -rf tempCodeSign")
+shutil.copytree(pluginName, "tempCodeSign")
+os.system("rm -rf ./tempCodeSign/Resources")
+# r = os.system("cp package.json ./tempCodeSign")
+# if (r!=0):
+#     fail_and_exit("Can not find package.json")
+
+r = os.system("cd tempCodeSign; zip -qr ../codeSign.zip *; cd ..")
+if (r!=0):
+    fail_and_exit("Zip codeSign failed!")
+os.system("rm -rf tempCodeSign")
+
+key = generate_dynamic_key()
+os.system("rm -rf codeSign")
+r = os.system("openssl enc -aes-128-cbc -k "+key+" -in codeSign.zip -out codeSign")
+if (r!=0):
+    fail_and_exit("Openssl codeSign failed!")
+os.system("rm -rf codeSign.zip")
+
+os.system("rm -rf key")
+r = os.system("echo "+key+" > key")
+if (r!=0):
+    fail_and_exit("Signing Failed! Cann't write!")
+
+keyOut = "mihome_" + generate_dynamic_key(8)
+# r = os.system("openssl rsautl -encrypt -in key -inkey "+privateKeyFile+" -out "+keyOut)
+r = os.system("openssl rsautl -sign -inkey "+privateKeyFile+" -out "+keyOut+" -in key")
+if (r!=0):
+    fail_and_exit("openssl rsautl mihome_ faild")
+os.system("rm -rf key")
+# r = os.system("openssl rsautl -verify -pubin -in "+keyOut+" -inkey "+publicCertFile+" -out key")
+# r = os.system("openssl rsautl -verify -keyform der -certin -inkey "+publicCertFile+" -in "+keyOut+" -out key")
+# if (r!=0):
+#     fail_and_exit("Openssl rsautl -encrypt failed!")
+
+print "Packaging..."
+os.system("rm -rf ./tmp_signed")
+os.system("mkdir tmp_signed")
+
+path = os.getcwd()
+os.system("mv codeSign ./tmp_signed")
+os.system("mv "+keyOut+" ./tmp_signed")
+
+r = os.system("cp ./"+pluginName+"/packageInfo.json ./tmp_signed")
+if (r!=0):
+    fail_and_exit("packageInfo.json not found, please generate it use generagePackageInfo")
+
+r = os.popen(shellDir+"/makeBundle "+pluginName+" temp_plugin_dir "+noframework, "r").read()
+r = os.system("cd temp_plugin_dir;zip -qr '../tmp_signed/"+pluginName+".zip' *;cd ..")
+r = os.system("rm -rf temp_plugin_dir")
+
+#sign
+md5 = os.popen("md5 " + "./tmp_signed/"+pluginName+".zip").read()
+md5 = md5[-33:-1]
+
+print "Signing..."
+print "Package MD5: " + md5
+
+r = os.system("echo "+md5+" > tmp.md5")
+if (r!=0):
+    fail_and_exit("Signing Failed! Cann't write!")
+r = os.system("openssl rsautl -sign -inkey " + privateKeyFile + " -out ./tmp_signed/" + pluginName + ".sign -in tmp.md5")
+if (r!=0):
+    fail_and_exit("Signing Failed! Check your key files and password")
+r = os.system("rm tmp.md5")
+
+r = os.system("cp "+publicCertFile+" ./tmp_signed/public.cer")
+if (r!=0):
+    fail_and_exit("Signing Failed! Cann't write!")
+
+r = os.system("echo "+developerId+" > ./tmp_signed/developerId")
+if (r!=0):
+    fail_and_exit("Signing Failed! Cann't write!")
+
+r = os.system("cd tmp_signed;zip -qr '../"+pluginName+".signed.zip' *;cd ..")
+if (r!=0):
+    fail_and_exit("Signing Failed! Cann't write!")
+
+r = os.system("rm -rf tmp_signed")
+
+print "package plugin finished!"
