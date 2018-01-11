@@ -76,7 +76,7 @@
    keytool -genkey -dname CN=YourName,OU=YourCompany,O=YourCompany,L=Beijing,ST=Beijing,C=86 -alias yourKeyAlias -keypass 123456 -storepass 123456 -keystore ./your.keystore -validity 18000 -keyalg RSA -keysize 2048
    ```
 
-2. 联系米家工作人员，提供 keystore 文件的证书 MD5 指纹：
+2. 在小米 IoT 开发者平台，个人开发者选项中，填入公钥。即 keystore 文件的证书 MD5 指纹：
 
    ```shell
    keytool -list -v -keystore your.keystore
