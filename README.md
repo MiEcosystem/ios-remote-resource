@@ -30,7 +30,24 @@
 
 资源文件存放处，将自己项目中所有的资源文件放入该目录，**不能有子目录**。
 
-暂时支持的资源为图片类型，包含 `.png` `.jpg` `jpeg`。后续会根据需求增加音频，视频文件。
+资源包中支持的图片类型： `.png` `.jpg` `jpeg`。
+
+代码中可以直接通过：
+```
+[UIImage imageNamed:"imagename.png"]
+```
+访问资源包中的图片
+
+资源包中的其他资源（html,音视频文件等）可以通过如下接口访问：
+
+```
+- (NSString *)MHPathForResource:(NSString *)name ofType:(NSString *)ext;
+```
+
+
+资源包中暂不支持的资源文件类型：
+`.xib`, `.strings`, `.nib`, `.storyboard`
+
 
 ### packageInfo.json
 
